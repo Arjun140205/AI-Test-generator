@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App theming */
+:root {
+  --bg: #0b1220;
+  --card: #0f172a;
+  --muted: #94a3b8;
+  --accent: #7c3aed;
+}
+html, body, #root {
+  height: 100%;
+}
+body {
+  background: radial-gradient(1200px 800px at 10% 10%, #0b1220 0%, #0b1220 40%, #0a1020 100%), var(--bg);
+  color: white;
+}
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  box-shadow: var(--shadow, 0 10px 30px rgba(0,0,0,0.08));
+}
+.btn {
+  @apply px-4 py-2 rounded-xl font-medium transition active:scale-[0.98];
+  background: linear-gradient(90deg, #7c3aed, #06b6d4);
+}
+.btn:hover { filter: brightness(1.05); }
+.input {
+  @apply bg-slate-800/70 border border-slate-700 rounded-xl px-3 py-2 outline-none w-full;
+}
+.checkbox {
+  @apply appearance-none w-4 h-4 rounded-md border border-slate-500 align-middle cursor-pointer;
+}
+.checkbox:checked {
+  background: #7c3aed;
+  border-color: #7c3aed;
+}
