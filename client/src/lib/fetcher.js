@@ -15,6 +15,7 @@ async function http(path, opts = {}) {
 export const api = {
   health: () => http('/api/health'),
   getTree: (owner, repo, ref) => http(`/api/github/tree?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&ref=${encodeURIComponent(ref || 'main')}`),
+  getFileContent: (owner, repo, path, ref) => http(`/api/github/file?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&path=${encodeURIComponent(path)}&ref=${encodeURIComponent(ref || 'main')}`),
   summaries: (payload) => http('/api/ai/summaries', { method: 'POST', body: JSON.stringify(payload) }),
-  generate: (payload) => http('/api/ai/generate', { method: 'POST', body: JSON.stringify(payload) }),
+  generate: (payload) => http('/api/generate-summary', { method: 'POST', body: JSON.stringify(payload) }),
 };
