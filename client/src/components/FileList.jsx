@@ -1,95 +1,102 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react';
 
-export default function FileList({ files, onGenerateSummaries }) {
-  const [checked, setChecked] = useState({})
-  const all = useMemo(()=>files.map(f=>f.path), [files])
-  const selected = useMemo(()=>Object.entries(checked).filter(([k,v])=>v).map(([k])=>k), [checked])
+export default function FileList({ files, onSelect, selected }) {
+  const [search, setSearch] = useState('');
 
-  const toggleAll = (val) => {
-    const next = {}
-    for (const p of all) next[p] = val
-    setChecked(next)
-  }
+  const filteredFiles = useMemo(() => {
+    if (!search.trim()) return files;
+    const query = search.toLowerCase();
+    return files.filter(f => f.path.toLowerCase().includes(query));
+  }, [files, search]);
 
-  const toggle = (p) => setChecked(prev => ({ ...prev, [p]: !prev[p] }))
+  const getFileIcon = (path) => {
+    const ext = path.split('.').pop()?.toLowerCase();
+    const icons = {
+      js: { icon: 'JS', color: 'text-yellow-400' },
+      jsx: { icon: '⚛', color: 'text-cyan-400' },
+      ts: { icon: 'TS', color: 'text-blue-400' },
+      tsx: { icon: '⚛', color: 'text-blue-400' },
+      py: { icon: '🐍', color: 'text-green-400' },
+      java: { icon: '☕', color: 'text-orange-400' },
+      go: { icon: 'Go', color: 'text-cyan-300' },
+      rb: { icon: '💎', color: 'text-red-400' },
+      php: { icon: 'PHP', color: 'text-purple-400' },
+      css: { icon: '🎨', color: 'text-pink-400' },
+      json: { icon: '{ }', color: 'text-yellow-300' },
+    };
+    return icons[ext] || { icon: '📄', color: 'text-dark-muted' };
+  };
 
   return (
-    <div className="bg-dark-secondary rounded-lg border border-dark-border overflow-hidden">
-      <div className="p-4 border-b border-dark-border">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-dark-text-primary">Repository Files</h3>
-          <div className="flex items-center space-x-2">
-            <button 
-              onClick={()=>toggleAll(true)}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-dark-text-primary 
-                       bg-dark-tertiary hover:bg-dark-secondary border border-dark-border rounded-md 
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-dark-accent"
-            >
-              Select all
-            </button>
-            <button 
-              onClick={()=>toggleAll(false)}
-              className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-dark-text-primary 
-                       bg-dark-tertiary hover:bg-dark-secondary border border-dark-border rounded-md 
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-dark-accent"
-            >
-              Clear
-            </button>
-            <button 
-              disabled={selected.length===0} 
-              onClick={() => {
-                if (selected.length > 0) {
-                  onGenerateSummaries(selected);
-                }
-              }}
-              className={`inline-flex items-center px-4 py-1.5 text-sm font-medium rounded-md 
-                       transition-colors focus:outline-none focus:ring-2 focus:ring-dark-accent
-                       ${selected.length === 0 
-                         ? 'bg-dark-tertiary text-dark-text-secondary cursor-not-allowed' 
-                         : 'bg-dark-accent hover:bg-dark-accent-hover text-white'}`}
-            >
-              Generate Summaries
-            </button>
-          </div>
+    <div className="flex flex-col h-full">
+      {/* Search */}
+      <div className="p-3 border-b border-dark-border">
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="input pl-10 py-2 text-sm"
+          />
         </div>
       </div>
-      <div className="max-h-[calc(100vh-300px)] overflow-auto p-4">
-        <ul className="space-y-1">
-          {files.map((f) => (
-            <li key={f.path} className="group flex items-center py-1 px-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-              <div className="flex items-center flex-1 min-w-0">
-                <input
-                  type="checkbox"
-                  checked={!!checked[f.path]}
-                  onChange={() => toggle(f.path)}
-                  className="h-4 w-4 text-indigo-600 dark:text-indigo-500 border-gray-300 dark:border-gray-600 rounded focus:ring-indigo-500 dark:focus:ring-indigo-400"
-                />
-                <div className="ml-3 flex items-center space-x-2 min-w-0">
-                  <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center text-gray-400 dark:text-gray-500">
-                    {f.path.endsWith('.js') ? '📄' : 
-                     f.path.endsWith('.jsx') ? '⚛️' : 
-                     f.path.endsWith('.css') ? '🎨' : 
-                     f.path.endsWith('.json') ? '📋' : 
-                     f.path.includes('.') ? '📄' : '📁'}
-                  </span>
-                  <span className="font-mono text-sm text-gray-700 dark:text-gray-300 truncate group-hover:text-gray-900 dark:group-hover:text-white flex-1">
-                    {f.path.split('/').map((part, i, arr) => (
-                      i === arr.length - 1 ? (
-                        <span key={i} className="font-medium">{part}</span>
-                      ) : (
-                        <span key={i} className="text-gray-400 dark:text-gray-500">{part}/</span>
-                      )
-                    ))}
-                  </span>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+
+      {/* File Count */}
+      <div className="px-4 py-2 text-xs text-dark-muted border-b border-dark-border bg-dark-elevated/30">
+        {filteredFiles.length} file{filteredFiles.length !== 1 ? 's' : ''}
+        {search && ` matching "${search}"`}
       </div>
-      <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
-        {files.length} files selected
+
+      {/* File List */}
+      <div className="flex-1 overflow-auto scrollbar-hide">
+        {filteredFiles.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <svg className="w-12 h-12 text-dark-muted mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-dark-muted text-sm">No files found</p>
+          </div>
+        ) : (
+          <ul className="py-2">
+            {filteredFiles.map((f) => {
+              const { icon, color } = getFileIcon(f.path);
+              const isSelected = selected === f.path;
+              const fileName = f.path.split('/').pop();
+              const dirPath = f.path.split('/').slice(0, -1).join('/');
+
+              return (
+                <li key={f.path}>
+                  <button
+                    onClick={() => onSelect(f.path)}
+                    className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-all duration-150 ${isSelected
+                        ? 'bg-burgundy-500/20 border-l-2 border-burgundy-500'
+                        : 'hover:bg-dark-elevated border-l-2 border-transparent'
+                      }`}
+                  >
+                    <span className={`flex-shrink-0 w-6 h-6 flex items-center justify-center text-xs font-bold rounded ${color}`}>
+                      {icon}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className={`font-medium text-sm truncate ${isSelected ? 'text-burgundy-300' : 'text-dark-text'}`}>
+                        {fileName}
+                      </div>
+                      {dirPath && (
+                        <div className="text-xs text-dark-muted truncate">
+                          {dirPath}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
-  )
+  );
 }
