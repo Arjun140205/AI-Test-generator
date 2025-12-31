@@ -1,19 +1,17 @@
 import React, { useState } from "react";
 
-export default function RepoConnect({ onConnect }) {
+export default function RepoConnect({ onConnect, loading }) {
   const [repoUrl, setRepoUrl] = useState("");
   const [error, setError] = useState("");
 
-
   const parseRepoUrl = (url) => {
-    // Supports: https://github.com/owner/repo or https://github.com/owner/repo/tree/branch
     try {
       const match = url.match(
         /^https?:\/\/github.com\/([^\/]+)\/([^\/]+)(?:\/tree\/([^\/]+))?/
       );
       if (!match) return null;
       const [, owner, repo, ref] = match;
-      return { owner, repo, ref: ref || 'main' };
+      return { owner, repo: repo.replace('.git', ''), ref: ref || 'main' };
     } catch {
       return null;
     }
@@ -21,54 +19,65 @@ export default function RepoConnect({ onConnect }) {
 
   const handleConnect = () => {
     if (!repoUrl.trim()) {
-      setError("Please enter a valid repository URL");
+      setError("Please enter a repository URL");
       return;
     }
     const repoInfo = parseRepoUrl(repoUrl.trim());
     if (!repoInfo) {
-      setError("Invalid GitHub repository URL");
+      setError("Invalid GitHub URL format");
       return;
     }
     setError("");
     onConnect(repoInfo);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleConnect();
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-          GitHub Repository
-        </h2>
-      </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
-        <label htmlFor="repo-url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Repository URL
-        </label>
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            id="repo-url"
-            placeholder="https://github.com/owner/repo"
-            value={repoUrl}
-            onChange={(e) => setRepoUrl(e.target.value)}
-            className="flex-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm 
-                       focus:border-indigo-500 focus:ring-indigo-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-400 
-                       sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white 
-                       placeholder-gray-400 dark:placeholder-gray-500"
-          />
-          <button
-            onClick={handleConnect}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm
-                     bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                     dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white transition-colors"
-          >
-            Connect
-          </button>
-        </div>
+    <div className="space-y-3">
+      <label className="block text-sm font-medium text-dark-text">
+        GitHub Repository
+      </label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          placeholder="https://github.com/owner/repo"
+          value={repoUrl}
+          onChange={(e) => {
+            setRepoUrl(e.target.value);
+            setError("");
+          }}
+          onKeyDown={handleKeyDown}
+          className="input flex-1 text-sm"
+          disabled={loading}
+        />
+        <button
+          onClick={handleConnect}
+          disabled={loading}
+          className="btn-primary px-4 flex-shrink-0"
+        >
+          {loading ? (
+            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          )}
+        </button>
       </div>
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-xs text-red-400 animate-fade-in">{error}</p>
       )}
+      <p className="text-xs text-dark-muted">
+        Supports: github.com/owner/repo or github.com/owner/repo/tree/branch
+      </p>
     </div>
   );
 }
