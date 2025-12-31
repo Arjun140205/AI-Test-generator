@@ -2,214 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== BASE STYLES ===== */
+/* ===== BASE ===== */
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
-  
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
   }
   
   body {
-    @apply font-body bg-dark-bg text-dark-text antialiased;
-    min-height: 100vh;
-    overflow-x: hidden;
+    @apply bg-slate-950 text-slate-200 font-sans;
+    font-feature-settings: "ss01", "ss02", "cv01";
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-semibold tracking-tight;
+
+  ::selection {
+    @apply bg-accent-500/30 text-white;
   }
-  
-  /* Custom scrollbar for dark theme */
+
+  /* Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
-  
   ::-webkit-scrollbar-track {
-    @apply bg-dark-surface;
+    @apply bg-transparent;
   }
-  
   ::-webkit-scrollbar-thumb {
-    @apply bg-burgundy-800 rounded-full;
+    @apply bg-slate-700 rounded-full;
   }
-  
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-burgundy-700;
+    @apply bg-slate-600;
+  }
+
+  /* Focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-accent-500/50 ring-offset-2 ring-offset-slate-950;
   }
 }
 
-/* ===== COMPONENT STYLES ===== */
+/* ===== COMPONENTS ===== */
 @layer components {
-  /* Container with responsive padding */
-  .container-app {
-    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-  
-  /* Card styles */
-  .card {
-    @apply bg-dark-surface border border-dark-border rounded-2xl shadow-card;
-    @apply transition-all duration-300 ease-out;
-  }
-  
-  .card-hover:hover {
-    @apply shadow-card-hover border-burgundy-800 transform -translate-y-1;
-  }
-  
-  /* Glass effect card */
-  .card-glass {
-    @apply bg-dark-surface/80 backdrop-blur-xl border border-dark-border/50 rounded-2xl;
-    @apply shadow-lg;
-  }
-  
-  /* Button base */
+  /* Buttons */
   .btn {
-    @apply inline-flex items-center justify-center gap-2;
-    @apply px-5 py-2.5 rounded-xl font-medium text-sm;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm;
     @apply transition-all duration-200 ease-out;
-    @apply focus:outline-none focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2 focus:ring-offset-dark-bg;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply active:scale-[0.98];
   }
-  
-  /* Primary button - burgundy gradient */
+
   .btn-primary {
-    @apply btn bg-gradient-burgundy text-white;
-    @apply hover:shadow-glow-md hover:scale-[1.02] active:scale-[0.98];
+    @apply btn bg-accent-600 text-white;
+    @apply hover:bg-accent-500 hover:shadow-glow;
   }
-  
-  /* Secondary button */
+
   .btn-secondary {
-    @apply btn bg-dark-elevated text-dark-text border border-dark-border;
-    @apply hover:bg-dark-surface hover:border-burgundy-700;
+    @apply btn bg-slate-800 text-slate-200 border border-slate-700;
+    @apply hover:bg-slate-700 hover:border-slate-600;
   }
-  
-  /* Ghost button */
+
   .btn-ghost {
-    @apply btn bg-transparent text-dark-muted;
-    @apply hover:text-dark-text hover:bg-dark-elevated;
+    @apply btn bg-transparent text-slate-400;
+    @apply hover:bg-slate-800/50 hover:text-slate-200;
   }
-  
-  /* Icon button */
+
   .btn-icon {
-    @apply p-2.5 rounded-xl text-dark-muted;
-    @apply transition-all duration-200;
-    @apply hover:text-burgundy-400 hover:bg-dark-elevated;
+    @apply p-2.5 rounded-xl text-slate-400;
+    @apply transition-colors duration-200;
+    @apply hover:bg-slate-800/50 hover:text-slate-200;
   }
-  
-  /* Input styles */
+
+  /* Inputs */
   .input {
     @apply w-full px-4 py-3 rounded-xl;
-    @apply bg-dark-elevated border border-dark-border;
-    @apply text-dark-text placeholder:text-dark-muted;
+    @apply bg-slate-900 border border-slate-800;
+    @apply text-slate-100 placeholder:text-slate-500;
     @apply transition-all duration-200;
-    @apply focus:outline-none focus:border-burgundy-500 focus:ring-2 focus:ring-burgundy-500/20;
+    @apply focus:border-accent-500/50 focus:bg-slate-850;
   }
-  
-  .input-error {
-    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+
+  /* Cards */
+  .card {
+    @apply bg-slate-900 border border-slate-800/80 rounded-2xl;
+    @apply shadow-card;
   }
-  
-  /* Checkbox */
-  .checkbox {
-    @apply appearance-none w-5 h-5 rounded-md border-2 border-dark-border;
-    @apply bg-dark-elevated cursor-pointer transition-all duration-200;
-    @apply checked:bg-burgundy-500 checked:border-burgundy-500;
-    @apply focus:ring-2 focus:ring-burgundy-500/30 focus:ring-offset-0;
+
+  .card-interactive {
+    @apply card transition-all duration-200;
+    @apply hover:border-slate-700 hover:shadow-card-hover hover:-translate-y-0.5;
   }
-  
-  .checkbox:checked {
-    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-  
+
   /* Badge */
   .badge {
-    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium;
-    @apply bg-burgundy-500/20 text-burgundy-300 border border-burgundy-500/30;
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium;
+    @apply bg-slate-800 text-slate-300 border border-slate-700/50;
   }
-  
-  /* Skeleton loader */
+
+  .badge-accent {
+    @apply bg-accent-500/10 text-accent-400 border-accent-500/20;
+  }
+
+  /* Skeleton */
   .skeleton {
-    @apply bg-dark-elevated rounded-lg overflow-hidden relative;
+    @apply bg-slate-800 rounded-lg animate-pulse;
   }
-  
-  .skeleton::after {
-    content: '';
-    @apply absolute inset-0 bg-shimmer bg-[length:200%_100%] animate-shimmer;
+
+  /* Page container */
+  .container-page {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
-  /* Page transition wrapper */
-  .page-enter {
-    @apply animate-slide-up;
-  }
-  
+
   /* Divider */
   .divider {
-    @apply h-px bg-dark-border my-4;
-  }
-  
-  /* Link styles */
-  .link {
-    @apply text-burgundy-400 hover:text-burgundy-300 transition-colors duration-200;
-    @apply underline underline-offset-2 decoration-burgundy-400/50 hover:decoration-burgundy-300;
+    @apply h-px bg-slate-800;
   }
 }
 
-/* ===== UTILITY STYLES ===== */
+/* ===== UTILITIES ===== */
 @layer utilities {
-  /* Text gradient */
   .text-gradient {
-    @apply bg-gradient-burgundy bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-accent-400 to-accent-600 bg-clip-text text-transparent;
   }
-  
-  /* Glow effects */
-  .glow-burgundy {
-    box-shadow: 0 0 20px rgba(227, 61, 95, 0.3);
-  }
-  
-  /* Hide scrollbar but keep functionality */
-  .scrollbar-hide {
+
+  .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
-  .scrollbar-hide::-webkit-scrollbar {
+  .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
-  
-  /* Safe area padding for mobile */
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
+
+  /* Safe area */
+  .safe-top { padding-top: env(safe-area-inset-top); }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+  .safe-left { padding-left: env(safe-area-inset-left); }
+  .safe-right { padding-right: env(safe-area-inset-right); }
 }
 
-/* ===== ANIMATIONS ===== */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+/* Toast overrides */
+.Toastify__toast-container {
+  @apply !p-4;
 }
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Toast customization */
 .Toastify__toast {
-  @apply bg-dark-surface border border-dark-border rounded-xl !important;
+  @apply !bg-slate-900 !border !border-slate-800 !rounded-xl !shadow-card !font-sans;
 }
-
 .Toastify__toast-body {
-  @apply text-dark-text font-body !important;
+  @apply !text-slate-200 !text-sm;
 }
-
 .Toastify__close-button {
-  @apply text-dark-muted hover:text-dark-text !important;
+  @apply !text-slate-400 hover:!text-slate-200;
+}
+.Toastify__progress-bar {
+  @apply !bg-accent-500;
 }
