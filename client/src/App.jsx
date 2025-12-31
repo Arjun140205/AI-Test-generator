@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -21,24 +20,18 @@ export default function App() {
     } catch { return null; }
   });
   const [files, setFiles] = useState([]);
-  const [summaries, setSummaries] = useState({ files: [] });
-  const [code, setCode] = useState('');
-  const [codeMeta, setCodeMeta] = useState(null);
-  const [busy, setBusy] = useState(false);
   const [user, setUser] = useState(null);
-  // FIX: Default to 'dashboard' instead of 'login' for logged-in users
   const [currentPage, setCurrentPage] = useState('login');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     api.health().then(() => setHealthOk(true)).catch(() => setHealthOk(false));
-    // Try to fetch user profile on load
     fetch('/api/auth/profile', { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data && data.user) {
+        if (data?.user) {
           setUser(data.user);
-          setCurrentPage('dashboard'); // Go to dashboard if already logged in
+          setCurrentPage('dashboard');
         }
       })
       .catch(() => { });
@@ -49,55 +42,12 @@ export default function App() {
     const info = { owner, repo, ref: ref || 'main' };
     setRepoInfo(info);
     setFiles(data.files);
-    setSummaries({ files: [] });
-    setCode('');
     localStorage.setItem('repoInfo', JSON.stringify(info));
   };
 
-  const handleGenerateSummaries = async (paths) => {
-    if (!repoInfo) return
-    setBusy(true)
-    try {
-      const res = await api.summaries({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref, paths })
-      setSummaries(res)
-      setCode('')
-    } catch (e) {
-      alert(e.message || 'Failed to generate summaries')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const handleGenerateCode = async ({ selected, framework }) => {
-    if (!repoInfo) return
-    const entries = Object.entries(selected).filter(([, v]) => !!v)
-    if (entries.length === 0) { alert('Select at least one summary'); return }
-    const [filePath, summary] = entries[0]
-    setBusy(true)
-    try {
-      const res = await api.generate({
-        owner: repoInfo.owner,
-        repo: repoInfo.repo,
-        ref: repoInfo.ref,
-        filePath,
-        summary,
-        framework
-      })
-      setCode(res.code)
-      const ext = framework.toLowerCase().includes('pytest') ? 'py'
-        : framework.toLowerCase().includes('junit') ? 'java'
-          : 'test.js'
-      setCodeMeta({ framework: res.framework, filePath: res.filePath, summary: res.summary, suggestedName: `${filePath.replace(/\//g, '_')}.${ext}` })
-    } catch (e) {
-      alert(e.message || 'Failed to generate code')
-    } finally {
-      setBusy(false)
-    }
-  }
-
   const handleLogin = (u) => {
     setUser(u);
-    setCurrentPage('dashboard'); // FIX: Go to dashboard, not profile
+    setCurrentPage('dashboard');
   };
 
   const handleLogout = () => {
@@ -108,44 +58,28 @@ export default function App() {
     localStorage.removeItem('repoInfo');
   };
 
-  // Auth pages (not logged in)
+  // Auth screens
   if (!user) {
     return (
-      <div className="min-h-screen bg-dark-bg flex flex-col">
-        {/* Background decoration */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-burgundy-500/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-burgundy-700/10 rounded-full blur-3xl" />
+      <div className="min-h-screen bg-slate-950 flex flex-col">
+        {/* Gradient background */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-accent-600/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-accent-500/5 rounded-full blur-[100px]" />
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-          <div className="w-full max-w-md animate-slide-up">
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6 relative z-10">
+          <div className="w-full max-w-sm animate-fade-up">
             {currentPage === 'signup' ? (
-              <>
-                <Signup onSignup={handleLogin} />
-                <div className="mt-6 text-center">
-                  <span className="text-dark-muted">Already have an account? </span>
-                  <button
-                    className="link font-medium"
-                    onClick={() => setCurrentPage('login')}
-                  >
-                    Login
-                  </button>
-                </div>
-              </>
+              <Signup
+                onSignup={handleLogin}
+                onSwitch={() => setCurrentPage('login')}
+              />
             ) : (
-              <>
-                <Login onLogin={handleLogin} />
-                <div className="mt-6 text-center">
-                  <span className="text-dark-muted">Don't have an account? </span>
-                  <button
-                    className="link font-medium"
-                    onClick={() => setCurrentPage('signup')}
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              </>
+              <Login
+                onLogin={handleLogin}
+                onSwitch={() => setCurrentPage('signup')}
+              />
             )}
           </div>
         </div>
@@ -153,15 +87,13 @@ export default function App() {
     );
   }
 
-  // Logout handling
   if (currentPage === 'logout') {
     return <Logout onLogout={handleLogout} />;
   }
 
-  // Profile page
   if (currentPage === 'profile') {
     return (
-      <div className="min-h-screen bg-dark-bg">
+      <div className="min-h-screen bg-slate-950 flex flex-col">
         <Header
           user={user}
           currentPage={currentPage}
@@ -169,17 +101,16 @@ export default function App() {
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
         />
-        <main className="container-app py-6 animate-fade-in">
+        <main className="flex-1 container-page py-6 sm:py-8 animate-fade-in">
           <Profile user={user} onLogout={() => setCurrentPage('logout')} onBack={() => setCurrentPage('dashboard')} />
         </main>
       </div>
     );
   }
 
-  // Saved test cases page
   if (currentPage === 'saved') {
     return (
-      <div className="min-h-screen bg-dark-bg">
+      <div className="min-h-screen bg-slate-950 flex flex-col">
         <Header
           user={user}
           currentPage={currentPage}
@@ -187,16 +118,16 @@ export default function App() {
           mobileMenuOpen={mobileMenuOpen}
           setMobileMenuOpen={setMobileMenuOpen}
         />
-        <main className="container-app py-6 animate-fade-in">
+        <main className="flex-1 container-page py-6 sm:py-8 animate-fade-in">
           <SavedTestCases user={user} onBack={() => setCurrentPage('dashboard')} />
         </main>
       </div>
     );
   }
 
-  // Main dashboard (default for logged-in users)
+  // Main dashboard
   return (
-    <div className="min-h-screen bg-dark-bg flex flex-col">
+    <div className="min-h-screen bg-slate-950 flex flex-col">
       <Header
         user={user}
         currentPage={currentPage}
@@ -205,7 +136,7 @@ export default function App() {
         setMobileMenuOpen={setMobileMenuOpen}
       />
 
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1">
         <Dashboard
           api={api}
           repoInfo={repoInfo}
@@ -215,17 +146,12 @@ export default function App() {
         />
       </main>
 
-      <footer className="border-t border-dark-border bg-dark-surface py-4 mt-auto">
-        <div className="container-app text-center text-sm text-dark-muted">
-          Built with <span className="text-burgundy-400">♥</span> by Arjunbir Singh
-        </div>
-      </footer>
-
       <ToastContainer
         position="bottom-right"
-        autoClose={2000}
-        theme="dark"
-        toastClassName="!bg-dark-surface !border !border-dark-border !rounded-xl"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
       />
     </div>
   );
