@@ -2,6 +2,7 @@
 import express from 'express';
 import { listRepoTree, getFileContent } from '../github/api.js';
 import { AIProvider } from '../ai/provider.js';
+import { generateSummaryAI } from '../ai/summary.js';
 
 const router = express.Router();
 
@@ -77,6 +78,21 @@ router.get('/github/tree', async (req, res) => {
   }
 });
 
+// GET /api/github/file?owner=&repo=&path=&ref=
+router.get('/github/file', async (req, res) => {
+  try {
+    const { owner, repo, path, ref = 'main' } = req.query;
+    if (!owner || !repo || !path) {
+      return res.status(400).json({ error: 'owner, repo, and path are required' });
+    }
+    const content = await getFileContent({ owner, repo, path, ref });
+    res.json(content);
+  } catch (e) {
+    const status = e?.response?.status || 500;
+    res.status(status).json({ error: e?.response?.data?.message || e.message });
+  }
+});
+
 // POST /api/ai/summaries
 // { owner, repo, ref, paths: [string] }
 router.post('/ai/summaries', async (req, res) => {
@@ -85,7 +101,7 @@ router.post('/ai/summaries', async (req, res) => {
     if (!owner || !repo || !Array.isArray(paths) || paths.length === 0) {
       return res.status(400).json({ error: 'owner, repo and non-empty paths[] required' });
     }
-    
+
     // Fetch file contents in parallel
     const files = await Promise.all(paths.map(async (p) => {
       try {
@@ -99,12 +115,12 @@ router.post('/ai/summaries', async (req, res) => {
 
     // Generate summaries using AI provider
     const out = await AIProvider.summaries(files);
-    
+
     // Add error handling for empty summaries
     if (!out || !out.files || out.files.length === 0) {
       return res.status(500).json({ error: 'Failed to generate summaries' });
     }
-    
+
     res.json(out);
   } catch (e) {
     console.error('Summary generation error:', e);
