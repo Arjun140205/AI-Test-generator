@@ -26,7 +26,7 @@ export async function generateSummaryAI({ code }) {
     });
     return aiResponse.data.choices[0].message.content;
   } else if (CONFIG.AI_PROVIDER === 'gemini') {
-    aiResponse = await axios.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + CONFIG.GEMINI_API_KEY, {
+    aiResponse = await axios.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + CONFIG.GEMINI_API_KEY, {
       contents: [
         { role: 'user', parts: [{ text: QA_PROMPT + '\n' + code }] }
       ]
